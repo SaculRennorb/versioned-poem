@@ -65,7 +65,7 @@ impl ParseFromMultipartField for Duration {
 }
 
 impl ToJSON for Duration {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(humantime::format_duration(*self).to_string()))
     }
 }

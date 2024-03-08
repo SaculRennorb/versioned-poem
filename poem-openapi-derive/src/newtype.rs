@@ -83,7 +83,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         quote! {
             {
                 let value = <Self as #crate_name::types::Example>::example();
-                <Self as #crate_name::types::ToJSON>::to_json(&value)
+                <Self as #crate_name::types::ToJSON>::to_json(&value, 0)
             }
         }
     } else {
@@ -155,8 +155,8 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
     let to_json = if args.to_json {
         Some(quote! {
             impl #impl_generics #crate_name::types::ToJSON for #ident #ty_generics #where_clause {
-                fn to_json(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
-                    <#inner_ty as #crate_name::types::ToJSON>::to_json(&self.0)
+                fn to_json(&self, version: i32) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+                    <#inner_ty as #crate_name::types::ToJSON>::to_json(&self.0, version)
                 }
             }
         })

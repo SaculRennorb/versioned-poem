@@ -70,7 +70,7 @@ impl ParseFromMultipartField for String {
 }
 
 impl ToJSON for String {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(self.clone()))
     }
 }
@@ -111,7 +111,7 @@ impl<'a> Type for &'a str {
 }
 
 impl<'a> ToJSON for &'a str {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(self.to_string()))
     }
 }

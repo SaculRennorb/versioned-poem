@@ -4,8 +4,8 @@ use darling::{
     FromDeriveInput, FromField,
 };
 use proc_macro2::{Ident, TokenStream};
-use quote::quote;
-use syn::{ext::IdentExt, Attribute, DeriveInput, Error, Generics, Path, Type};
+use quote::{quote, ToTokens};
+use syn::{ext::IdentExt, Attribute, Expr, DeriveInput, Error, Generics, Path, Type};
 
 use crate::{
     common_args::{apply_rename_rule_field, DefaultValue, ExternalDocument, RenameRule},
@@ -46,6 +46,8 @@ struct ObjectField {
     serialize_with: Option<Path>,
     #[darling(default)]
     deserialize_with: Option<Path>,
+    #[darling(default)]
+    version: Option<Expr>,
 }
 
 #[derive(FromDeriveInput)]
@@ -140,7 +142,11 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         let field_name = field.rename.clone().unwrap_or_else(|| {
             apply_rename_rule_field(args.rename_all, field_ident.unraw().to_string())
         });
-        let field_description = get_description(&field.attrs)?;
+        let field_description = match (get_description(&field.attrs)?, &field.version) {
+            (Some(base), Some(version)) => Some(format!("{base}\nAvailable in version {}.", version.to_token_stream())),
+            (None, Some(version)) => Some(format!("Available in version {}.", version.to_token_stream())),
+            (b, None) => b,
+        };
         let field_description = optional_literal(&field_description);
         let validators = field.validator.clone().unwrap_or_default();
         let validators_checker = validators.create_obj_field_checker(&crate_name, &field_name)?;
@@ -249,6 +255,11 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
                 } else {
                     quote!(true)
                 };
+                let check_version = if let Some(ref expr) = field.version {
+                    quote!(matches!(version, #expr))
+                } else {
+                    quote!(true)
+                };
 
                 let serialize_function = match field.serialize_with {
                     Some(ref function) => quote! { #function },
@@ -256,8 +267,8 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
                 };
 
                 serialize_fields.push(quote! {
-                    if #check_is_none && #check_is_empty && #check_if {
-                        if let ::std::option::Option::Some(value) = #serialize_function(&self.#field_ident) {
+                    if #check_is_none && #check_is_empty && #check_if && #check_version {
+                        if let ::std::option::Option::Some(value) = #serialize_function(&self.#field_ident, version) {
                             object.insert(::std::string::ToString::to_string(#field_name), value);
                         }
                     }
@@ -265,7 +276,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
             }
         } else {
             serialize_fields.push(quote! {
-                if let ::std::option::Option::Some(#crate_name::__private::serde_json::Value::Object(obj)) = #crate_name::types::ToJSON::to_json(&self.#field_ident) {
+                if let ::std::option::Option::Some(#crate_name::__private::serde_json::Value::Object(obj)) = #crate_name::types::ToJSON::to_json(&self.#field_ident, version) {
                     object.extend(obj);
                 }
             });
@@ -273,7 +284,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
 
         let field_meta_default = match &create_default_value {
             Some(create_default_value) if !read_only => {
-                quote!(#crate_name::types::ToJSON::to_json(&#create_default_value))
+                quote!(#crate_name::types::ToJSON::to_json(&#create_default_value, 0))
             }
             _ => quote!(::std::option::Option::None),
         };
@@ -367,7 +378,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         };
         (
             quote! {
-                <Self as #crate_name::types::ToJSON>::to_json(&#crate_name::types::Example::example())
+                <Self as #crate_name::types::ToJSON>::to_json(&#crate_name::types::Example::example(), 0)
             },
             new_where_clause,
         )
@@ -427,7 +438,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         }
 
         impl #impl_generics #crate_name::types::ToJSON for #ident #ty_generics #where_clause {
-            fn to_json(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+            fn to_json(&self, version: i32) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
                 let mut object = #crate_name::__private::serde_json::Map::new();
                 #(#serialize_fields)*
                 ::std::option::Option::Some(#crate_name::__private::serde_json::Value::Object(object))
@@ -450,6 +461,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
 
         impl #impl_generics #crate_name::types::ToXML for #ident #ty_generics #where_clause {
             fn to_xml(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+                let version = 0;
                 let mut object = #crate_name::__private::serde_json::Map::new();
                 #(#serialize_fields)*
                 ::std::option::Option::Some(#crate_name::__private::serde_json::Value::Object(object))
@@ -472,6 +484,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
 
         impl #impl_generics #crate_name::types::ToYAML for #ident #ty_generics #where_clause {
             fn to_yaml(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+                let version = 0;
                 let mut object = #crate_name::__private::serde_json::Map::new();
                 #(#serialize_fields)*
                 ::std::option::Option::Some(#crate_name::__private::serde_json::Value::Object(object))

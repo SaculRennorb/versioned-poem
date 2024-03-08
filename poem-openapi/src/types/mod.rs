@@ -152,11 +152,11 @@ pub trait ParseFromMultipartField: Sized + Type {
 /// Represents a type that can converted to JSON value.
 pub trait ToJSON: Type {
     /// Convert this value to [`Value`].
-    fn to_json(&self) -> Option<Value>;
+    fn to_json(&self, version: i32) -> Option<Value>;
 
     /// Convert this value to JSON string.
-    fn to_json_string(&self) -> String {
-        serde_json::to_string(&self.to_json()).unwrap_or_default()
+    fn to_json_string(&self, version: i32) -> String {
+        serde_json::to_string(&self.to_json(version)).unwrap_or_default()
     }
 }
 
@@ -219,8 +219,8 @@ impl<T: Type> Type for &T {
 }
 
 impl<T: ToJSON> ToJSON for &T {
-    fn to_json(&self) -> Option<Value> {
-        T::to_json(self)
+    fn to_json(&self, v: i32) -> Option<Value> {
+        T::to_json(self, v)
     }
 }
 
@@ -303,8 +303,8 @@ impl<T: ParseFromParameter> ParseFromParameter for Arc<T> {
 }
 
 impl<T: ToJSON> ToJSON for Arc<T> {
-    fn to_json(&self) -> Option<Value> {
-        self.as_ref().to_json()
+    fn to_json(&self, v: i32) -> Option<Value> {
+        self.as_ref().to_json(v)
     }
 }
 
@@ -398,8 +398,8 @@ impl<T: ParseFromMultipartField> ParseFromMultipartField for Box<T> {
 }
 
 impl<T: ToJSON> ToJSON for Box<T> {
-    fn to_json(&self) -> Option<Value> {
-        self.as_ref().to_json()
+    fn to_json(&self, v: i32) -> Option<Value> {
+        self.as_ref().to_json(v)
     }
 }
 
@@ -451,7 +451,7 @@ mod tests {
         assert_eq!(value, Arc::new(100));
 
         assert_eq!(
-            ToJSON::to_json(&Arc::new(100)),
+            ToJSON::to_json(&Arc::new(100), 0),
             Some(Value::Number(100.into()))
         );
 
@@ -486,7 +486,7 @@ mod tests {
         assert_eq!(value, Box::new(100));
 
         assert_eq!(
-            ToJSON::to_json(&Box::new(100)),
+            ToJSON::to_json(&Box::new(100), 0),
             Some(Value::Number(100.into()))
         );
 

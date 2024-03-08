@@ -95,7 +95,7 @@ impl ParseFromParameter for Base64<Bytes> {
 }
 
 impl<T: AsRef<[u8]> + Send + Sync> ToJSON for Base64<T> {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(STANDARD.encode(self.0.as_ref())))
     }
 }

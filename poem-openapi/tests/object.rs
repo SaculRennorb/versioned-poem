@@ -105,7 +105,7 @@ fn read_only_all() {
     assert!(!field_value_schema.write_only);
 
     assert_eq!(
-        Obj { id: 99, value: 100 }.to_json(),
+        Obj { id: 99, value: 100 }.to_json(0),
         Some(serde_json::json!({
             "id": 99,
             "value": 100,
@@ -150,7 +150,7 @@ fn write_only_all() {
     );
 
     assert_eq!(
-        Obj { id: 99, value: 100 }.to_json(),
+        Obj { id: 99, value: 100 }.to_json(0),
         Some(serde_json::json!({}))
     );
 }
@@ -176,7 +176,7 @@ fn field_skip() {
     );
 
     assert_eq!(
-        Obj { a: 10, b: 0 }.to_json(),
+        Obj { a: 10, b: 0 }.to_json(0),
         Some(json!({
             "a": 10,
         }))
@@ -329,7 +329,7 @@ fn serde() {
         a: i32,
     }
 
-    assert_eq!(Obj { a: 10 }.to_json(), Some(json!({ "a": 10 })));
+    assert_eq!(Obj { a: 10 }.to_json(0), Some(json!({ "a": 10 })));
     assert_eq!(
         Obj::parse_from_json(Some(json!({ "a": 10 }))).unwrap(),
         Obj { a: 10 }
@@ -343,7 +343,7 @@ fn serde_generic() {
         a: T,
     }
 
-    assert_eq!(Obj::<i32> { a: 10 }.to_json(), Some(json!({ "a": 10 })));
+    assert_eq!(Obj::<i32> { a: 10 }.to_json(0), Some(json!({ "a": 10 })));
     assert_eq!(
         <Obj<i32>>::parse_from_json(Some(json!({ "a": 10 }))).unwrap(),
         Obj { a: 10 }
@@ -372,7 +372,7 @@ fn read_only() {
     );
 
     assert_eq!(
-        Obj { id: 99, value: 100 }.to_json(),
+        Obj { id: 99, value: 100 }.to_json(0),
         Some(serde_json::json!({
             "id": 99,
             "value": 100,
@@ -438,7 +438,7 @@ fn write_only() {
     );
 
     assert_eq!(
-        Obj { id: 99, value: 100 }.to_json(),
+        Obj { id: 99, value: 100 }.to_json(0),
         Some(serde_json::json!({
             "id": 99,
         }))
@@ -652,7 +652,7 @@ fn flatten_field() {
         c: 300,
     };
 
-    assert_eq!(obj.to_json(), Some(json!({"a": 100, "b": 200, "c": 300})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": 100, "b": 200, "c": 300})));
     assert_eq!(
         Obj::parse_from_json(Some(json!({"a": 100, "b": 200, "c":
 300})))
@@ -716,7 +716,7 @@ fn skip_serializing_if_is_none() {
         b: None,
         c: Some(200),
     };
-    assert_eq!(obj.to_json(), Some(json!({"a": 100, "c": 200})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": 100, "c": 200})));
 
     #[derive(Debug, Object, Eq, PartialEq)]
     struct MyObj2 {
@@ -733,7 +733,7 @@ fn skip_serializing_if_is_none() {
         b: None,
         c: Some(200),
     };
-    assert_eq!(obj.to_json(), Some(json!({"a": 100, "c": 200})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": 100, "c": 200})));
 }
 
 #[test]
@@ -749,7 +749,7 @@ fn skip_serializing_if_is_empty() {
         a: vec![1, 2, 3],
         b: vec![],
     };
-    assert_eq!(obj.to_json(), Some(json!({"a": [1, 2, 3]})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": [1, 2, 3]})));
 
     #[derive(Debug, Object, Eq, PartialEq)]
     struct MyObj2 {
@@ -763,7 +763,7 @@ fn skip_serializing_if_is_empty() {
         a: vec![1, 2, 3],
         b: vec![],
     };
-    assert_eq!(obj.to_json(), Some(json!({"a": [1, 2, 3]})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": [1, 2, 3]})));
 }
 
 #[test]
@@ -781,7 +781,7 @@ fn skip_serializing_if() {
     }
 
     let obj = MyObj { a: 100, b: 200 };
-    assert_eq!(obj.to_json(), Some(json!({"b": 200})));
+    assert_eq!(obj.to_json(0), Some(json!({"b": 200})));
 }
 
 #[test]
@@ -1037,13 +1037,13 @@ fn serialize_with() {
 
     // NOTE(Rennorb): Function signature in complice with `to_json` in the Type system.
     // Would prefer the usual way of implementing this with a serializer reference, but this has to do for now.
-    fn round(v: &f32) -> Option<serde_json::Value> {
-        Some(serde_json::Value::from((*v as f64 * 1e5).round() / 1e5))
+    fn round(val: &f32, _v: i32) -> Option<serde_json::Value> {
+        Some(serde_json::Value::from((*val as f64 * 1e5).round() / 1e5))
     }
 
     let obj = Obj { a: 0.3, b: 0.3 };
 
-    assert_eq!(obj.to_json(), Some(json!({"a": 0.3f64, "b": 0.3f32})));
+    assert_eq!(obj.to_json(0), Some(json!({"a": 0.3f64, "b": 0.3f32})));
 }
 
 #[test]
@@ -1076,4 +1076,28 @@ fn deserialize_with() {
         Obj::parse_from_json(Some(json!({"a": "3 + 4"}))).unwrap(),
         Obj { a: 7 }
     );
+}
+
+
+#[test]
+fn versioning() {
+    #[derive(Debug, PartialEq, Object)]
+    struct Obj {
+        a: i32,
+        #[oai(version = 3)]
+        b: i32,
+        #[oai(version = 3 | 5)]
+        c: i32,
+    }
+
+    let obj = Obj { a: 1, b: 2, c: 3 };
+
+    assert_eq!(obj.to_json(0), Some(json!({ "a": 1 })));
+    assert_eq!(obj.to_json(3), Some(json!({ "a": 1, "b": 2, "c": 3 })));
+    assert_eq!(obj.to_json(5), Some(json!({ "a": 1, "c": 3 })));
+
+    let meta = get_meta::<Obj>();
+
+    let field_meta = meta.properties[2].1.unwrap_inline();
+    assert_eq!(field_meta.description, Some("Available in version 3 | 5."));
 }

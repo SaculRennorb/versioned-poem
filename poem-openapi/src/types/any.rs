@@ -47,7 +47,7 @@ impl<T: DeserializeOwned + Send + Sync> ParseFromJSON for Any<T> {
 }
 
 impl<T: Serialize + Send + Sync> ToJSON for Any<T> {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(serde_json::to_value(&self.0).unwrap_or_default())
     }
 }
@@ -99,7 +99,7 @@ impl ParseFromJSON for Value {
 }
 
 impl ToJSON for Value {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(self.clone())
     }
 }

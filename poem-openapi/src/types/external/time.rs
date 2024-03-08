@@ -69,7 +69,7 @@ impl ParseFromMultipartField for OffsetDateTime {
 }
 
 impl ToJSON for OffsetDateTime {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(self.format(&Rfc3339).unwrap_or_default()))
     }
 }
@@ -130,7 +130,7 @@ macro_rules! impl_naive_datetime_types {
         }
 
         impl ToJSON for $ty {
-            fn to_json(&self) -> Option<Value> {
+            fn to_json(&self, _v: i32) -> Option<Value> {
                 Some(Value::String(self.format($format_description).unwrap()))
             }
         }

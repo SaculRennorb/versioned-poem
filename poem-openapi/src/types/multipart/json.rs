@@ -61,7 +61,7 @@ impl<T: ParseFromJSON> ParseFromMultipartField for JsonField<T> {
 }
 
 impl<T: ToJSON> ToJSON for JsonField<T> {
-    fn to_json(&self) -> Option<Value> {
-        self.0.to_json()
+    fn to_json(&self, v: i32) -> Option<Value> {
+        self.0.to_json(v)
     }
 }

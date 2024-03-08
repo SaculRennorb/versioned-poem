@@ -123,7 +123,7 @@ fn with_discriminator() {
             v1: 100,
             v2: "hello".to_string()
         })
-        .to_json(),
+        .to_json(0),
         Some(json!({
             "type": "A",
             "v1": 100,
@@ -141,7 +141,7 @@ fn with_discriminator() {
     );
 
     assert_eq!(
-        MyObj::B(B { v3: true }).to_json(),
+        MyObj::B(B { v3: true }).to_json(0),
         Some(json!({
             "type": "B",
             "v3": true,
@@ -260,7 +260,7 @@ fn with_discriminator_mapping() {
             v1: 100,
             v2: "hello".to_string()
         })
-        .to_json(),
+        .to_json(0),
         Some(json!({
             "type": "c",
             "v1": 100,
@@ -278,7 +278,7 @@ fn with_discriminator_mapping() {
     );
 
     assert_eq!(
-        MyObj::B(B { v3: true }).to_json(),
+        MyObj::B(B { v3: true }).to_json(0),
         Some(json!({
             "type": "d",
             "v3": true,
@@ -332,7 +332,7 @@ fn without_discriminator() {
             v1: 100,
             v2: "hello".to_string()
         })
-        .to_json(),
+        .to_json(0),
         Some(json!({
             "v1": 100,
             "v2": "hello",
@@ -343,7 +343,7 @@ fn without_discriminator() {
         MyObj::parse_from_json(Some(json!(true))).unwrap(),
         MyObj::B(true)
     );
-    assert_eq!(MyObj::B(true).to_json(), Some(json!(true)));
+    assert_eq!(MyObj::B(true).to_json(0), Some(json!(true)));
 }
 
 #[test]
@@ -577,7 +577,7 @@ fn rename_all() {
     );
 
     assert_eq!(
-        MyObj::PutInt(A { value: 100 }).to_json(),
+        MyObj::PutInt(A { value: 100 }).to_json(0),
         Some(json!({
             "type": "putInt",
             "value": 100,
@@ -599,7 +599,7 @@ fn rename_all() {
         MyObj::PutString(B {
             value: "abc".to_string()
         })
-        .to_json(),
+        .to_json(0),
         Some(json!({
             "type": "putString",
             "value": "abc",

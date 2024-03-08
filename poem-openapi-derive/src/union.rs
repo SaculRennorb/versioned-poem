@@ -126,7 +126,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
                 if let Some(discriminator_name) = &discriminator_name {
                     to_json.push(quote! {
                         Self::#item_ident(obj) => {
-                            let mut value = <#object_ty as #crate_name::types::ToJSON>::to_json(obj);
+                            let mut value = <#object_ty as #crate_name::types::ToJSON>::to_json(obj, version);
                             if let ::std::option::Option::Some(obj) = value.as_mut().and_then(|value| value.as_object_mut()) {
                                 obj.insert(::std::convert::Into::into(#discriminator_name), ::std::convert::Into::into(#mapping_name));
                             }
@@ -135,7 +135,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
                     });
                 } else {
                     to_json.push(quote! {
-                        Self::#item_ident(obj) => <#object_ty as #crate_name::types::ToJSON>::to_json(obj)
+                        Self::#item_ident(obj) => <#object_ty as #crate_name::types::ToJSON>::to_json(obj, version)
                     });
                 }
 
@@ -292,7 +292,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         }
 
         impl #impl_generics #crate_name::types::ToJSON for #ident #ty_generics #where_clause {
-            fn to_json(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+            fn to_json(&self, version: i32) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
                 match self {
                     #(#to_json),*
                 }

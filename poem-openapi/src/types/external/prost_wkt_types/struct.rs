@@ -53,7 +53,7 @@ impl ParseFromJSON for prost_wkt_types::Struct {
 }
 
 impl ToJSON for prost_wkt_types::Struct {
-    fn to_json(&self) -> Option<serde_json::Value> {
+    fn to_json(&self, _v: i32) -> Option<serde_json::Value> {
         serde_json::to_value(self).ok()
     }
 }

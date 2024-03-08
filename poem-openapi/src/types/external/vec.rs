@@ -107,10 +107,10 @@ impl<T: ParseFromMultipartField> ParseFromMultipartField for Vec<T> {
 }
 
 impl<T: ToJSON> ToJSON for Vec<T> {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, v: i32) -> Option<Value> {
         let mut values = Vec::with_capacity(self.len());
         for item in self {
-            if let Some(value) = item.to_json() {
+            if let Some(value) = item.to_json(v.clone()) {
                 values.push(value);
             }
         }

@@ -73,7 +73,7 @@ impl<T: ParseFromJSON> ParsePayload for Json<T> {
 
 impl<T: ToJSON> IntoResponse for Json<T> {
     fn into_response(self) -> Response {
-        poem::web::Json(self.0.to_json()).into_response()
+        poem::web::Json(self.0.to_json(0)).into_response()
     }
 }
 

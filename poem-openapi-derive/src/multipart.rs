@@ -154,10 +154,10 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         let has_default = field.default.is_some();
         let field_meta_default = match &field.default {
             Some(DefaultValue::Default) => {
-                quote!(#crate_name::types::ToJSON::to_json(&<#field_ty as ::std::default::Default>::default()))
+                quote!(#crate_name::types::ToJSON::to_json(&<#field_ty as ::std::default::Default>::default(), 0))
             }
             Some(DefaultValue::Function(func_name)) => {
-                quote!(#crate_name::types::ToJSON::to_json(&#func_name()))
+                quote!(#crate_name::types::ToJSON::to_json(&#func_name(), 0))
             }
             None => quote!(::std::option::Option::None),
         };

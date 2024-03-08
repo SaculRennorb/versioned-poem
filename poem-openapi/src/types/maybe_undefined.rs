@@ -398,9 +398,9 @@ impl<T: ParseFromMultipartField> ParseFromMultipartField for MaybeUndefined<T> {
 }
 
 impl<T: ToJSON> ToJSON for MaybeUndefined<T> {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, v: i32) -> Option<Value> {
         match self {
-            MaybeUndefined::Value(value) => value.to_json(),
+            MaybeUndefined::Value(value) => value.to_json(v),
             MaybeUndefined::Undefined => None,
             MaybeUndefined::Null => Some(Value::Null),
         }
@@ -732,11 +732,11 @@ mod tests {
     #[test]
     fn test_to_json() {
         assert_eq!(
-            MaybeUndefined::<i32>::Value(100).to_json(),
+            MaybeUndefined::<i32>::Value(100).to_json(0),
             Some(json!(100))
         );
-        assert_eq!(MaybeUndefined::<i32>::Null.to_json(), Some(json!(null)));
-        assert_eq!(MaybeUndefined::<i32>::Undefined.to_json(), None);
+        assert_eq!(MaybeUndefined::<i32>::Null.to_json(0), Some(json!(null)));
+        assert_eq!(MaybeUndefined::<i32>::Undefined.to_json(0), None);
 
         #[derive(Debug, Object, PartialEq)]
         #[oai(internal)]
@@ -748,7 +748,7 @@ mod tests {
             MyObj {
                 a: MaybeUndefined::Value(100)
             }
-            .to_json(),
+            .to_json(0),
             Some(json!({
                 "a": 100,
             }))
@@ -758,7 +758,7 @@ mod tests {
             MyObj {
                 a: MaybeUndefined::Null
             }
-            .to_json(),
+            .to_json(0),
             Some(json!({
                 "a": null,
             }))
@@ -768,7 +768,7 @@ mod tests {
             MyObj {
                 a: MaybeUndefined::Undefined
             }
-            .to_json(),
+            .to_json(0),
             Some(json!({}))
         );
     }

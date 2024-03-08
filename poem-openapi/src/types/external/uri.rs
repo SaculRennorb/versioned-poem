@@ -68,7 +68,7 @@ impl ParseFromMultipartField for Uri {
 }
 
 impl ToJSON for Uri {
-    fn to_json(&self) -> Option<Value> {
+    fn to_json(&self, _v: i32) -> Option<Value> {
         Some(Value::String(self.to_string()))
     }
 }

@@ -97,7 +97,7 @@ macro_rules! impl_string_types {
         }
 
         impl ToJSON for $ty {
-            fn to_json(&self) -> Option<Value> {
+            fn to_json(&self, _v: i32) -> Option<Value> {
                 Some(Value::String(self.0.clone()))
             }
         }

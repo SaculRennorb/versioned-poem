@@ -76,7 +76,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
             apply_rename_rule_variant(args.rename_all, variant.ident.unraw().to_string())
         });
 
-        enum_items.push(quote!(#crate_name::types::ToJSON::to_json(&#ident::#item_ident).unwrap()));
+        enum_items.push(quote!(#crate_name::types::ToJSON::to_json(&#ident::#item_ident, 0).unwrap()));
         ident_to_item.push(quote!(#ident::#item_ident => #oai_item_name));
         item_to_ident
             .push(quote!(#oai_item_name => ::std::result::Result::Ok(#ident::#item_ident)));
@@ -184,7 +184,7 @@ pub(crate) fn generate(args: DeriveInput) -> GeneratorResult<TokenStream> {
         }
 
         impl #crate_name::types::ToJSON for #ident {
-            fn to_json(&self) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
+            fn to_json(&self, version: i32) -> ::std::option::Option<#crate_name::__private::serde_json::Value> {
                 let name = match self {
                     #(#ident_to_item),*
                 };

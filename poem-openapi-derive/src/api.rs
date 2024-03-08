@@ -302,10 +302,10 @@ fn generate_operation(
         let has_default = operation_param.default.is_some();
         let param_meta_default = match &operation_param.default {
             Some(DefaultValue::Default) => {
-                quote!(#crate_name::types::ToJSON::to_json(&<<#arg_ty as #crate_name::ApiExtractor>::ParamType as std::default::Default>::default()))
+                quote!(#crate_name::types::ToJSON::to_json(&<<#arg_ty as #crate_name::ApiExtractor>::ParamType as std::default::Default>::default(), 0))
             }
             Some(DefaultValue::Function(func_name)) => {
-                quote!(#crate_name::types::ToJSON::to_json(&#func_name()))
+                quote!(#crate_name::types::ToJSON::to_json(&#func_name(), 0))
             }
             None => quote!(::std::option::Option::None),
         };
@@ -323,10 +323,10 @@ fn generate_operation(
 
         let param_meta_example = match &operation_param.example {
             Some(ExampleValue::Default) => {
-                quote!(#crate_name::types::ToJSON::to_json(&<<#arg_ty as #crate_name::ApiExtractor>::ParamType as std::default::Default>::default()))
+                quote!(#crate_name::types::ToJSON::to_json(&<<#arg_ty as #crate_name::ApiExtractor>::ParamType as std::default::Default>::default(), 0))
             }
             Some(ExampleValue::Function(func_name)) => {
-                quote!(#crate_name::types::ToJSON::to_json(&#func_name()))
+                quote!(#crate_name::types::ToJSON::to_json(&#func_name(), 0))
             }
             None => quote!(::std::option::Option::None),
         };

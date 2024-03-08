@@ -201,10 +201,10 @@ fn generate_operation(
         // default value for parameter
         let param_meta_default = match &operation_param.default {
             Some(DefaultValue::Default) => {
-                quote!(::std::option::Option::Some(#crate_name::types::ToJSON::to_json(&<#arg_ty as ::std::default::Default>::default())))
+                quote!(::std::option::Option::Some(#crate_name::types::ToJSON::to_json(&<#arg_ty as ::std::default::Default>::default(), 0)))
             }
             Some(DefaultValue::Function(func_name)) => {
-                quote!(::std::option::Option::Some(#crate_name::types::ToJSON::to_json(&#func_name())))
+                quote!(::std::option::Option::Some(#crate_name::types::ToJSON::to_json(&#func_name(), 0)))
             }
             None => quote!(::std::option::Option::None),
         };

@@ -64,7 +64,7 @@ macro_rules! impl_geojson_types {
         }
 
         impl crate::types::ToJSON for $geometry {
-            fn to_json(&self) -> Option<::serde_json::Value> {
+            fn to_json(&self, _v: i32) -> Option<::serde_json::Value> {
                 Some(
                     ::serde_json::Map::<String, ::serde_json::Value>::from(
                         &geojson::Geometry::from(self),
@@ -102,7 +102,7 @@ mod tests {
 
     #[test]
     fn serializes_geo_to_json() {
-        assert_eq!(point_json(), point_geo().to_json().unwrap())
+        assert_eq!(point_json(), point_geo().to_json(0).unwrap())
     }
 
     #[test]

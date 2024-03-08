@@ -68,7 +68,7 @@ macro_rules! impl_datetime_types {
         }
 
         impl ToJSON for $ty {
-            fn to_json(&self) -> Option<Value> {
+            fn to_json(&self, _v: i32) -> Option<Value> {
                 Some(Value::String(self.to_rfc3339()))
             }
         }
@@ -135,7 +135,7 @@ macro_rules! impl_naive_datetime_types {
         }
 
         impl ToJSON for $ty {
-            fn to_json(&self) -> Option<Value> {
+            fn to_json(&self, _v: i32) -> Option<Value> {
                 Some(Value::String(format!($display, &self)))
             }
         }
@@ -160,7 +160,7 @@ mod tests {
                 .and_hms_opt(23, 56, 4)
                 .unwrap(),
         );
-        let value = dt.to_json();
+        let value = dt.to_json(0);
         assert_eq!(
             value,
             Some(Value::String("2015-09-18T23:56:04+00:00".to_string()))
@@ -185,7 +185,7 @@ mod tests {
             .unwrap()
             .and_hms_opt(23, 56, 4)
             .unwrap();
-        let value = dt.to_json();
+        let value = dt.to_json(0);
         assert_eq!(
             value,
             Some(Value::String("2015-09-18T23:56:04".to_string()))
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn naive_date() {
         let dt = NaiveDate::from_ymd_opt(2015, 9, 18).unwrap();
-        let value = dt.to_json();
+        let value = dt.to_json(0);
         assert_eq!(value, Some(Value::String("2015-09-18".to_string())));
         assert_eq!(
             NaiveDate::parse_from_json(Some(Value::String("2015-09-18".to_string()))).unwrap(),
@@ -214,7 +214,7 @@ mod tests {
     #[test]
     fn naive_time() {
         let dt = NaiveTime::from_hms_opt(23, 56, 4).unwrap();
-        let value = dt.to_json();
+        let value = dt.to_json(0);
         assert_eq!(value, Some(Value::String("23:56:04".to_string())));
         assert_eq!(
             NaiveTime::parse_from_json(Some(Value::String("23:56:04".to_string()))).unwrap(),

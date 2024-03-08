@@ -83,7 +83,7 @@ macro_rules! impl_type_for_ip {
         }
 
         impl ToJSON for $ty {
-            fn to_json(&self) -> Option<Value> {
+            fn to_json(&self, _v: i32) -> Option<Value> {
                 Some(Value::String(self.to_string()))
             }
         }

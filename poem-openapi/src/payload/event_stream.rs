@@ -62,7 +62,7 @@ impl<T: Stream + Send + 'static> EventStream<T> {
     ///     MyEvent { value: 3 },
     /// ]))
     /// .to_event(|event| {
-    ///     let json = event.to_json_string();
+    ///     let json = event.to_json_string(0);
     ///     Event::message(json).event_type("push")
     /// });
     /// ```
@@ -98,7 +98,7 @@ impl<T: Stream<Item = E> + Send + 'static, E: Type + ToJSON + 'static> IntoRespo
             Some(to_event) => SSE::new(self.stream.map(to_event)),
             None => SSE::new(
                 self.stream
-                    .map(|message| message.to_json_string())
+                    .map(|message| message.to_json_string(0))
                     .map(Event::message),
             ),
         };
