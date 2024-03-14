@@ -996,3 +996,19 @@ async fn issue_489() {
         .await
         .assert_status(StatusCode::METHOD_NOT_ALLOWED);
 }
+
+#[tokio::test]
+async fn cow() {
+    use std::borrow::Cow;
+    struct Api;
+
+    #[OpenApi]
+    impl Api {
+        #[oai(path = "/hello/:name", method = "get")]
+        async fn get_hello(&self, _name : Query<Cow<'_, str>>) {}
+    }
+
+    let cow = Cow::Borrowed("test");
+    let _jc = Json(cow);
+    println!("{_jc:?}");
+}
