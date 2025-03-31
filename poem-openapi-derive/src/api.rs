@@ -23,7 +23,7 @@ use crate::{
 pub(crate) struct APIArgs {
     #[darling(default)]
     internal: bool,
-    #[darling(default, with = "crate::utils::preserve_str_literal")]
+    #[darling(default, with = crate::utils::preserve_str_literal)]
     prefix_path: Option<Expr>,
     #[darling(default, multiple, rename = "tag")]
     common_tags: Vec<Path>,
